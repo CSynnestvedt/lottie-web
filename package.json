@@ -1,12 +1,13 @@
 {
   "name": "lottie-web",
-  "version": "5.13.0",
+  "version": "5.13.1",
   "description": "After Effects plugin for exporting animations to SVG + JavaScript or canvas + JavaScript",
   "main": "./build/player/lottie.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/airbnb/lottie-web.git"
   },
+  "type": "module",
   "sideEffects": false,
   "scripts": {
     "build": "npx eslint ./player/js/**/* && rollup -c && node tasks/build_worker",
@@ -25,25 +26,34 @@
     "export"
   ],
   "devDependencies": {
-    "@babel/core": "^7.16.0",
-    "@babel/plugin-transform-runtime": "^7.17.0",
-    "@babel/preset-env": "^7.16.4",
-    "@rollup/plugin-babel": "^5.3.0",
-    "@rollup/plugin-node-resolve": "^13.0.6",
-    "cheerio": "^1.0.0-rc.2",
-    "command-line-args": "^5.2.1",
-    "eslint": "^7.16.0",
-    "eslint-config-airbnb-base": "^14.2.1",
-    "eslint-plugin-import": "^2.22.1",
-    "express": "^4.18.2",
-    "pixelmatch": "^5.3.0",
+    "@babel/core": "^7.27.1",
+    "@babel/plugin-transform-runtime": "^7.27.1",
+    "@babel/preset-env": "^7.27.2",
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "cheerio": "^1.0.0",
+    "command-line-args": "^6.0.1",
+    "eslint": "^9.27.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.31.0",
+    "express": "^5.1.0",
+    "pixelmatch": "^7.1.0",
     "pngjs": "^7.0.0",
-    "puppeteer": "^20.5.0",
-    "rollup": "^2.61.0",
+    "puppeteer": "^24.9.0",
+    "rollup": "^4.41.0",
     "rollup-plugin-terser": "^7.0.2",
-    "uglify-js": "^3.4.9",
+    "uglify-js": "^3.19.3",
     "watch": "^1.0.2"
   },
   "types": "./index.d.ts",
-  "license": "MIT"
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./build/player/lottie.d.ts",
+      "import": "./build/player/esm/lottie.min.js",
+      "require": "./build/player/cjs/lottie.min.js",
+      "default": "./build/player/lottie.js"
+    },
+    "./package.json": "./package.json"
+  }
 }

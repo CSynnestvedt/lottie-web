@@ -1,6 +1,6 @@
-const fs = require('fs');
-const UglifyJS = require("uglify-js");
-const packageFile = require("../package.json");
+import * as fs from 'fs';
+import UglifyJS from 'uglify-js';
+import packageFile from '../package.json' with { type: 'json' };
 
 const buildFolder = 'build/player/';
 const rootFolder = 'player/';

@@ -1,13 +1,13 @@
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import { terser } from 'rollup-plugin-terser';
 import babel from '@rollup/plugin-babel';
-import {version} from './package.json'
+import pkg from './package.json' with { type: 'json' };
 
 const injectVersion = (options = {}) => {
   return {
     name: 'inject-version',
     renderChunk: (code) => {
-      return code.replace('[[BM_VERSION]]', version)
+      return code.replace('[[BM_VERSION]]', pkg.version)
     },
   }
 }
@@ -21,14 +21,40 @@ const addNavigatorValidation = (options = {}) => {
   }
 }
 
-const addDocumentValidation = (options = {}) => {
-  return {
-    name: 'add-document-validation',
-    renderChunk: (code) => {
-      return '(typeof document !== "undefined") && ' + code;
-    },
-  };
-};
+const addDocumentValidation = () => ({
+  name: 'add-document-validation',
+  renderChunk(code) {
+    // Only wrap the code before the export statement
+    const exportRegex = /export\s*\{[^}]+\}\s*;?/;
+    const match = code.match(exportRegex);
+    if (match) {
+      const [exportStatement] = match;
+      const codeWithoutExport = code.replace(exportRegex, '');
+      return (
+        'var lottie = (typeof document !== "undefined") && (function(){\n' +
+        codeWithoutExport.trim() +
+        '\nreturn lottie;\n})();\n' +
+        exportStatement + '\n'
+      );
+    }
+    // fallback: wrap everything if no export found
+    return 'var lottie = (typeof document !== "undefined") && (function(){\n' + code + '\nreturn lottie;\n})();';
+  },
+});
+
+const clientOnlyGuard = () => ({
+  name: 'client-only-guard',
+  renderChunk(code) {
+    return '(typeof window !== "undefined" || typeof document !== "undefined") && ' + code;
+}
+});
+
+const processValidation = () => ({
+  name: 'process-validation',
+  renderChunk(code) {
+    return '(typeof process === "undefined") && ' + code;
+  }
+})
 
 const noTreeShakingForStandalonePlugin = () => {
   return {
@@ -40,6 +66,13 @@ const noTreeShakingForStandalonePlugin = () => {
     }
   }
 }
+
+const addUseStrict = () => ({
+  name : 'add-use-strict',
+  renderChunk(code) {
+    return '"use strict";' + code;
+  }
+})
 
 const destinationBuildFolder = 'build/player/';
 
@@ -145,7 +178,6 @@ const plugins = [
   }),
   // noTreeShakingForStandalonePlugin(),
   injectVersion(),
-  addNavigatorValidation(),
   addDocumentValidation(),
 ];
 const pluginsWithTerser = [
@@ -166,7 +198,7 @@ const UMDModule = {
 };
 
 const ESMModule = {
-  plugins: [nodeResolve()],
+  plugins: [addUseStrict(), ...plugins],
   treeshake: false,
   output: [
     {
